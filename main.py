@@ -1,7 +1,6 @@
 import os
 import time
-import smtplib
-from email.mime.text import MIMEText
+import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -16,13 +15,8 @@ USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 LOGIN_URL = os.getenv("LOGIN_URL")
 RESERVATION_URL = os.getenv("RESERVATION_URL")
-
-SMTP_SERVER = os.getenv("SMTP_SERVER","")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASS = os.getenv("SMTP_PASS", "")
-EMAIL_FROM = os.getenv("EMAIL_FROM", "")
-EMAIL_TO = os.getenv("EMAIL_TO","")
+NTFY_SERVER = os.getenv("NTFY_SERVER", "http://localhost:8080")
+NTFY_TOPIC = os.getenv("NTFY_TOPIC", "mmmk_notifications")
 
 def login(driver):
     driver.get(LOGIN_URL)
@@ -36,19 +30,9 @@ def login(driver):
     password_input.send_keys(Keys.RETURN)
     time.sleep(2)
 
-def send_email(week_info):
-    subject = "Reservation Week Available!"
-    body = f"Next week's reservations are now available:\n{week_info}"
-
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_FROM
-    msg["To"] = EMAIL_TO
-
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASS)
-        server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+def send_ntfy_notification(message):
+    url = f"{NTFY_SERVER}/{NTFY_TOPIC}"
+    requests.post(url, data=message.encode('utf-8'))
 
 def check_next_week(driver):
     driver.get(RESERVATION_URL)
@@ -64,9 +48,12 @@ def check_next_week(driver):
 
     if "Nincs dátum" in next_week:
         print("Next week is not yet available.")
+        return False
     else:
-        print(f"Next week available: {next_week}")
-        send_email(next_week)  # Sends email notification
+        notification = f"Next week's reservations are now available: {next_week}"
+        print(notification)
+        send_ntfy_notification(notification)
+        return True
 
 def main():
     options = Options()
@@ -76,10 +63,16 @@ def main():
     options.add_argument('--disable-dev-shm-usage')
 
     driver = webdriver.Chrome(options=options)
+    login(driver)
 
     try:
-        login(driver)
-        check_next_week(driver)
+        notified = False
+        while not notified:
+            notified = check_next_week(driver)
+            if not notified:
+                time.sleep(600)
+            else:
+                print("Notification sent. Exiting.")
     finally:
         driver.quit()
 
