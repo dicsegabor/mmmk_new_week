@@ -98,9 +98,3 @@ chmod +x run_then_sleep.sh
 ## Logs
 
 All activity is logged to `logfile.log` in the current directory.
-
----
-
-## License
-
-MIT License (or your preferred license)
