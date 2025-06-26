@@ -30,7 +30,7 @@ pip install -r requirements.txt
 Create a `.env` file in the project root with:
 
 ```
-NTFY_SERVER=http://<your-ntfy-server-ip>:80
+NTFY_SERVER=http://<your-ntfy-server-ip>:<port>
 NTFY_TOPIC=mmmk_notifications
 ```
 
