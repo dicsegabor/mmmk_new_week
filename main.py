@@ -8,10 +8,12 @@ import random
 from datetime import date
 from dotenv import load_dotenv
 from selenium import webdriver
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from webdriver_manager.firefox import GeckoDriverManager
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -190,20 +192,32 @@ def make_reservations(driver, reservation_list):
         logger.error("Could not find or click the 'Mentés' button.")
 
 
+def get_driver():
+    logger.info("Setting up Firefox WebDriver in headless mode...")
+
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+
+    try:
+        driver_path = GeckoDriverManager().install()
+        logger.info(f"GeckoDriver installed at: {driver_path}")
+
+        driver = webdriver.Firefox(service=FirefoxService(driver_path), options=options)
+        logger.info("Firefox WebDriver initialized successfully.")
+        return driver
+    except Exception as e:
+        logger.exception("Failed to initialize Firefox WebDriver.")
+        raise
+
+
 def main():
 
+    current_date = date.today()
+
+    driver = get_driver()
     reservation_list = load_reservation_list("reservation_list.json")
 
     username, password = bw_get_credentials()
-    current_date = date.today()
-
-    chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/chromium"
-    # chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    driver = webdriver.Chrome(options=chrome_options)
 
     try:
         login(driver, username, password)
