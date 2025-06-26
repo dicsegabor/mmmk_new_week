@@ -30,7 +30,7 @@ pip install -r requirements.txt
 Create a `.env` file in the project root with:
 
 ```
-NTFY_SERVER=http://<your-ntfy-server-ip>:<port>
+NTFY_SERVER=http://<your-ntfy-server-ip>:80
 NTFY_TOPIC=mmmk_notifications
 ```
 
@@ -41,7 +41,11 @@ Replace `<your-ntfy-server-ip>` with the IP or domain of your `ntfy` server.
 Create a `reservation_list.json` file in the root directory, for example:
 
 ```json
-["saturday 19:00", "saturday 20:00", "saturday 21:00"]
+[
+  "saturday 19:00",
+  "saturday 20:00",
+  "saturday 21:00"
+]
 ```
 
 Each entry should be a string in the format:  
@@ -59,7 +63,7 @@ Before running the script:
 bw login
 ```
 
-During execution, you’ll be prompted for your master password to retrieve credentials. Set your `BW_ITEM_ID` inside the script.
+During execution, you’ll be prompted for your master password to retrieve credentials. Change the `BW_ITEM_ID` value in `main.py` to match your Bitwarden item's ID.
 
 ---
 
@@ -98,3 +102,9 @@ chmod +x run_then_sleep.sh
 ## Logs
 
 All activity is logged to `logfile.log` in the current directory.
+
+---
+
+## License
+
+MIT License (or your preferred license)
