@@ -214,6 +214,7 @@ def main():
 
     current_date = date.today()
 
+    send_ntfy_notification("Test notification")
     driver = get_driver()
     reservation_list = load_reservation_list("reservation_list.json")
 
